@@ -1,0 +1,5 @@
+package CLItool
+
+func SayHello() {
+
+}
