@@ -19,14 +19,6 @@ func check(err error) {
 	}
 }
 
-func checkExtraSteps( obj interface{}, err error) interface{},  error {
-	if err != nil {
-		fmt.Println(err)
-	}
-	return obj, err
-
-}
-
 func DownloadFile(filepath string, url string) error {
 
 	// Get the data
@@ -53,7 +45,7 @@ func Unzip(src string, dest string) ([]string, error) {
 
 	r, err := zip.OpenReader(src)
 	if err != nil {
-		return checkExtraSteps(filenames, err)
+		return filenames, err
 	}
 	defer r.Close()
 
@@ -64,7 +56,7 @@ func Unzip(src string, dest string) ([]string, error) {
 
 		// Check for ZipSlip. More Info: http://bit.ly/2MsjAWE
 		if !strings.HasPrefix(fpath, filepath.Clean(dest)+string(os.PathSeparator)) {
-			return checkExtraSteps(filenames, fmt.Errorf("%s: illegal file path", fpath)) 
+			return filenames, fmt.Errorf("%s: illegal file path", fpath)
 		}
 
 		filenames = append(filenames, fpath)
@@ -77,17 +69,17 @@ func Unzip(src string, dest string) ([]string, error) {
 
 		// Make File
 		if err = os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
-			return checkExtraSteps(filenames, err)
+			return filenames, err
 		}
 
 		outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 		if err != nil {
-			return checkExtraSteps(filenames, err)
+			return filenames, err
 		}
 
 		rc, err := f.Open()
 		if err != nil {
-			return checkExtraSteps(filenames, err)
+			return filenames, err
 		}
 
 		_, err = io.Copy(outFile, rc)
@@ -97,7 +89,7 @@ func Unzip(src string, dest string) ([]string, error) {
 		rc.Close()
 
 		if err != nil {
-			return checkExtraSteps(filenames, err)
+			return filenames, err
 		}
 	}
 	return filenames, nil
@@ -121,15 +113,15 @@ func VerifyBranchName(username string, reponame string, branchName string) bool 
 func GetMainBranchName(username string, reponame string) (string, error) {
 	response, err := http.Get("https://api.github.com/repos/" + username + "/" + reponame)
 	if err != nil {
-		return checkExtraSteps("", err)
+		return "", err
 	}
 
 	data, _ := ioutil.ReadAll(response.Body)
 	// bodyStr := string(data)
 	var obj GitHubResponse
 	err = json.Unmarshal(data, &obj)
-	if err != nil {		
-		return checkExtraSteps("", err)
+	if err != nil {
+		return "", err
 
 	}
 
